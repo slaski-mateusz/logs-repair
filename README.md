@@ -52,17 +52,17 @@ Bugfix would be prepared but team is heavy loaded so we have to write as tools d
 In repository there are 3 directories with the following tools:
 1. generator
 
-..1. Python script simulating program generating such broken logs
+  1. Python script simulating program generating such broken logs
 
-.....Script generate broken logs and proper logs to use during testing repair tool
+    Script generate broken logs and proper logs to use during testing repair tool
 
 2. offline-repair
 
-..1. Python script doing conversion of historical logs
+  1. Python script doing conversion of historical logs
 
-..2. Python script comparing repaired logs with generated for testing
+  2. Python script comparing repaired logs with generated for testing
 
 3. online-repair
 
-..1.Go program doing conversion online
+  1.Go program doing conversion online
 
