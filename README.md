@@ -57,6 +57,7 @@ In repository there are 3 directories with the following tools:
 2. offline-repair
 
     2.1. Python script doing conversion of historical logs
+
     2.2. Python script comparing repaired logs with generated for testing
 
 3. online-repair
