@@ -12,9 +12,7 @@ KEY = "Key"
 LEVEL = "Level"
 VALUE = "Value"
 
-msgs_to_generate = 500
-
-# Choosin maximum size of generated object 
+# Choosin maximum size of generated object
 max_obj_size = 3
 
 # Choosing maximum depth of generated JSON
@@ -33,15 +31,14 @@ simple_messages = [
     "This is information that has to be saved"
 ]
 
-def generate_json():
-    # All JSONs roots in messages are dictionary
-    data = {}
 
 def make_key(l, i):
     return f"{LEVEL}-{max_depth-l+1}-{KEY}-{i+1}"
 
+
 def make_value(l, i):
     return f"{LEVEL}-{max_depth-l+1}-{VALUE}-{i+1}"
+
 
 def generate_json_level(level):
     # Level 0 need to generate values
@@ -52,8 +49,8 @@ def generate_json_level(level):
             [
                 {},
                 []
-             ]
-            )
+            ]
+        )
     size = random.randint(0, max_obj_size)
     for idx in range(size):
         key = make_key(level, idx)
@@ -75,19 +72,22 @@ def generate_json_level(level):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 11:
-        print("""
-Expecting arguments:
---out_filename
---mode fg/sim
---logs_to_repair DIR_NAME
---logs_for_tests DIR_NAME
---sleep_time_base SECONDS
-        """)
+    arguments = [
+        "--msgs_to_generate INTEGER",
+        "--out_filename STRING",
+        "--mode STRING with one of [fg, sim]",
+        "--logs_to_repair STRING",
+        "--logs_for_tests STRING",
+        "--sleep_time_base INTEGER"
+    ]
+    if len(sys.argv) != 1 + 2 * len(arguments):
+        print(
+            "Expecting arguments:\n" + "\n".join(arguments)
+        )
         exit(1)
     ap = argparse.ArgumentParser(
-        description="Generator of test legs"
-        )
+        description="Generator of test logs"
+    )
     ap.add_argument(
         "--out_filename",
         type=str,
@@ -97,6 +97,11 @@ Expecting arguments:
         "--sleep_time_base",
         type=float,
         help="Sleep time cycle base seconds as float number"
+    )
+    ap.add_argument(
+        "--msgs_to_generate",
+        type=int,
+        help="Number of messages to generate than finish. 0 never finish."
     )
     ap.add_argument(
         "--mode",
@@ -118,6 +123,7 @@ Expecting arguments:
     logs_to_repair = args.logs_to_repair
     logs_for_tests = args.logs_for_tests
     sleep_time_base = args.sleep_time_base
+    msgs_to_generate = args.msgs_to_generate
     if not args.mode in ["fg", "sim"]:
         print("No proper work mode given. Please define -mode 'fg' or 'sim'. Exiting!")
         exit(1)
@@ -125,17 +131,18 @@ Expecting arguments:
     logger_ft = logging.getLogger("logs_for_tests")
     logger_tr.setLevel(logging.INFO)
     logger_ft.setLevel(logging.INFO)
-    file_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+    file_formatter = logging.Formatter(
+        "%(asctime)s %(name)s %(levelname)s %(message)s")
     file_handler_tr = RotatingFileHandler(
         filename=os.path.join(logs_to_repair, output_filename),
         maxBytes=10000,
         backupCount=10
-        )
+    )
     file_handler_ft = RotatingFileHandler(
         filename=os.path.join(logs_for_tests, output_filename),
         maxBytes=10000,
         backupCount=10
-        )
+    )
     file_handler_tr.setFormatter(file_formatter)
     file_handler_ft.setFormatter(file_formatter)
     logger_tr.addHandler(file_handler_tr)
@@ -150,9 +157,10 @@ Expecting arguments:
         if args.mode == "sim":
             sleep_time = sleep_time_base + random.uniform(0, 1.25)
         else:
-            if entry_index > msgs_to_generate:
-                print(f"Finished. {msgs_to_generate} messages generated.")
-                exit(0)
+            if msgs_to_generate > 0: 
+                if entry_index > msgs_to_generate:
+                    print(f"Finished. {msgs_to_generate} messages generated.")
+                    exit(0)
             sleep_time = 0
         time.sleep(sleep_time)
         entry_index += 1
@@ -160,12 +168,12 @@ Expecting arguments:
             prefix = random.choice(json_prefixes)
             jdata = generate_json_level(max_depth)
             msg_tr = " " + json.dumps(
-                    jdata,
-                    indent=4
-                )
+                jdata,
+                indent=4
+            )
             msg_ft = " " + json.dumps(
-                    jdata,
-                )
+                jdata,
+            )
         else:
             prefix = ""
             msg = random.choice(simple_messages)
@@ -173,4 +181,3 @@ Expecting arguments:
             msg_ft = msg
         logger_tr.info(f"index={entry_index} {prefix}{msg_tr}")
         logger_ft.info(f"index={entry_index} {prefix}{msg_ft}")
-    
